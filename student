@@ -1,0 +1,179 @@
+#!/bin/bash  
+ 
+#查询函数 
+search() 
+{ 
+ clear 
+ echo -e "请输入要查看学生的姓名或学号: \c" #\c 最后不加上换行符号
+ read NAME 
+ # 如果无记录时 
+ if [ ! -f ./record ]
+ then 
+  echo "无此记录 !" 
+  sleep 2 
+  clear 
+  return 
+ fi 
+ 
+ # 没有输入名字查询时候 
+ if [ -z "$NAME" ]
+ then 
+  echo "你没有输入名字或学号，请重新输入：" 
+  echo -e "请输入名字或学好： >>>\c" 
+ fi 
+ echo "查询结果： $NAME" 
+  echo "名字 学号 成绩"
+ 
+  
+ grep "$NAME" ./record 2> /dev/null 
+  
+ case "$?" in 
+  1 ) echo "没有此人的记录." 
+   ;; 
+  2 ) echo "你没有输入名字." 
+   sleep 2 
+   search # 继续查询 
+   ;; 
+ esac 
+} 
+ 
+#增加记录函数 
+add() 
+{ 
+ clear 
+ echo -e "请输入添加的姓名，学号和成绩：" 
+ echo -e "\c" 
+ 
+ if [ ! -f ./record ];   #没有就建
+ then 
+  touch record 
+  echo "退出请按q..." >> ./record  #>代表覆盖式的写入 ，>>代表添加式的写入
+  echo "名字 学号 成绩" >> ./record 
+ fi 
+ 
+ read NEWNAME 
+ echo "$NEWNAME" >> ./record 
+ 
+ # 排序后写回文件 
+ 
+ echo "添加成功" 
+ sleep 1    #睡眠1秒
+} 
+ 
+ 
+#删除记录函数 
+delete() 
+{ 
+ clear 
+ echo -e "请输入你要删除的记录的学生姓名或学号：  " 
+ read NAME 
+ 
+ if [ ! -f ./record ]
+ then 
+  echo "没有此记录！" 
+ else 
+  cp record record.bak 
+ 
+  grep "$NAME" ./record.bak > /dev/null 
+  if [ $? != 0 ]
+  then 
+   echo "没有此记录" 
+  else 
+   grep -v "$NAME" ./record.bak > record 
+   echo "删除成功" 
+  fi 
+  rm -f record.bak 
+ fi 
+ sleep 1 
+} 
+ 
+#显示所有记录 
+display() 
+{
+ clear
+ less record
+ 
+} 
+
+#修改
+update()
+{
+  clear 
+ echo -e "请输入你要更改的记录的学生姓名或学号：  " 
+ read NAME 
+ 
+ if [ ! -f ./record ]
+ then 
+  echo "记录为空！" 
+ else 
+  cp record record.bak 
+  grep "$NAME" ./record.bak > /dev/null 
+  if [ $? != 0 ]; then 
+   echo "此人不存在" 
+  else 
+   grep -v "$NAME" ./record.bak > record 
+
+  fi 
+  rm -f record.bak 
+ fi 
+ clear 
+ echo -e "请输入请输入修改后的姓名和成绩：" 
+ echo -e "\c" 
+ 
+ if [ ! -f ./record ]    #如果没有就建一个
+ then  
+  touch record 
+ fi 
+ read NEWNAME 
+ echo "$NEWNAME" >> ./record 
+ # 排序后写回文件 
+ sort -o ./record ./record 
+echo "更改成功"
+ sleep 1  
+}
+
+ 
+#退出程序 
+quit() 
+{ 
+ clear 
+ exit 
+} 
+ 
+clear 
+while : 
+do 
+ 
+
+ echo "                    学生信息管理系统"
+ echo "***********************************************************" 
+ echo "              	     1. 查找" 
+ echo "     		     2. 添加" 
+ echo "      		     3. 删除" 
+ echo "      		     4. 显示全部学生信息" 
+ echo "     	             5. 更改学生信息"
+ echo "     		     q: 退出系统" 
+ echo "***********************************************************" 
+  
+ echo -e -n " 请输入你的选择: [1, 2, 3, 4, 5, q]:\c" 
+ read choice 
+ 
+ case $choice in 
+  1 ) search 
+   ;; 
+  2 ) add; clear
+   ;; 
+  3 ) delete; clear 
+   ;; 
+  4 ) display 
+   ;;
+  5 ) update
+   ;;   
+  Q | q ) quit 
+   ;; 
+  * ) echo "无效的选择 !" 
+   sleep 2 
+   clear 
+   ;; 
+ esac 
+done
